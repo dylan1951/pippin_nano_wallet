@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/appditto/pippin_nano_wallet/libs/utils"
 	"io"
 	"net/http"
 	"strings"
@@ -39,7 +40,15 @@ func (client *RPCClient) MakeRequest(request interface{}) ([]byte, error) {
 		return nil, err
 	}
 	// HTTP post
-	resp, err := client.httpClient.Post(client.Url, "application/json", bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", client.Url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		log.Errorf("Error making RPC request %s", err)
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", utils.GetEnv("RPC-API-KEY", ""))
+
+	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		log.Errorf("Error making RPC request %s", err)
 		return nil, err

@@ -52,7 +52,9 @@ func NewPippinPow(workPeers []string, bpowKey string, bpowUrl string) *PippinPow
 // Makes a request to configured array of work peers
 func (p *PippinPow) workGenerateAPIRequest(ctx context.Context, url string, hash string, difficultyMultiplier int, difficulty string, validate bool, out chan *string) {
 	resp, err := net.MakeWorkGenerateRequest(ctx, url, hash, difficulty)
+	fmt.Println("got PoW from work peer")
 	if err == nil && resp.Work != "" {
+		fmt.Println("debug 1")
 		// Validate work
 		if IsWorkValid(hash, difficultyMultiplier, resp.Work) || !validate {
 			p.SetWorkPeersFailing(false)
@@ -119,6 +121,7 @@ func WorkCancelAPIRequest(url string, hash string) {
 // If no peers or boompow configured, uses local PoW
 // If all peers fail, will use local PoW until peers are responsive again
 func (p *PippinPow) WorkGenerateMeta(hash string, difficultyMultiplier int, validate bool, blockAward bool, bpowKey string) (string, error) {
+	fmt.Printf("number of work peers: %d\n", len(p.WorkPeers))
 
 	// 1 hard coded valid work is just for higher level integration tests so we don't need to calculate real work
 	if hash == "3F93C5CD2E314FA16702189041E68E68C07B27961BF37F0B7705145BEFBA3AA3" {
@@ -141,11 +144,13 @@ func (p *PippinPow) WorkGenerateMeta(hash string, difficultyMultiplier int, vali
 	runningLocally := false
 
 	if (len(p.WorkPeers) < 1 && p.bpowKey == "" && bpowKey == "") || p.WorkPeersFailing() {
+		fmt.Println("running local PoW")
 		// Local pow
 		runningLocally = true
 		go p.workGenerateLocal(ctx, hash, difficultyMultiplier, validate, resultChan)
 	}
 	for _, peer := range p.WorkPeers {
+		fmt.Println("asking work peer for PoW")
 		go p.workGenerateAPIRequest(ctx, peer, hash, difficultyMultiplier, difficultyStr, validate, resultChan)
 	}
 	if p.bpowUrl != "" {

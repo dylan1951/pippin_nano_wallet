@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/appditto/pippin_nano_wallet/libs/utils"
 	"io/ioutil"
 	"net/http"
 
@@ -50,7 +51,7 @@ func MakeWorkGenerateRequest(ctx context.Context, url string, hash string, diffi
 		},
 		Difficulty: difficulty,
 	}
-	response, err := MakeRequest(ctx, url, request, "")
+	response, err := MakeRequest(ctx, url, request, utils.GetEnv("RPC_API_KEY", ""))
 	if err != nil {
 		log.Errorf("Error making request %s", err)
 		return nil, err
@@ -75,7 +76,7 @@ func MakeWorkCancelRequest(ctx context.Context, url string, hash string) error {
 		Action: "work_cancel",
 		Hash:   hash,
 	}
-	_, err := MakeRequest(ctx, url, request, "")
+	_, err := MakeRequest(ctx, url, request, utils.GetEnv("RPC_API_KEY", ""))
 	if err != nil {
 		log.Errorf("Error making request %s", err)
 		return err

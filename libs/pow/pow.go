@@ -52,9 +52,7 @@ func NewPippinPow(workPeers []string, bpowKey string, bpowUrl string) *PippinPow
 // Makes a request to configured array of work peers
 func (p *PippinPow) workGenerateAPIRequest(ctx context.Context, url string, hash string, difficultyMultiplier int, difficulty string, validate bool, out chan *string) {
 	resp, err := net.MakeWorkGenerateRequest(ctx, url, hash, difficulty)
-	fmt.Println("got PoW from work peer")
-	if err == nil && resp.Work != "" {
-		fmt.Println("debug 1")
+	if err == nil {
 		// Validate work
 		if IsWorkValid(hash, difficultyMultiplier, resp.Work) || !validate {
 			p.SetWorkPeersFailing(false)
@@ -62,6 +60,8 @@ func (p *PippinPow) workGenerateAPIRequest(ctx context.Context, url string, hash
 		} else {
 			log.Errorf("Received invalid work %s for %s from %s", resp.Work, hash, url)
 		}
+	} else {
+		log.Errorf("Failed to generate work from %s: %s\n", url, err.Error())
 	}
 }
 

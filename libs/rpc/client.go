@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/appditto/pippin_nano_wallet/libs/utils"
 	"io"
 	"net/http"
@@ -286,6 +287,7 @@ func (client *RPCClient) MakeProcessRequest(request requests.ProcessRequest) (*r
 		if !ok {
 			return nil, errors.New("Error response is not a string")
 		}
+		fmt.Printf("in MakeProcessRequest the response has error string\n")
 		return nil, errors.New(err)
 	}
 

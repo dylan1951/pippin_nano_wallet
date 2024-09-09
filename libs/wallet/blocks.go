@@ -236,6 +236,8 @@ func (w *NanoWallet) createSendBlock(wallet *ent.Wallet, sender *ent.Account, am
 		return nil, errors.New("Unable to parse send amount")
 	}
 
+	fmt.Printf("getting account info\n")
+
 	// Get account info
 	accountInfo, err := w.RpcClient.MakeAccountInfoRequest(sender.Address)
 	if errors.Is(err, nanorpc.ErrAccountNotFound) {
@@ -270,11 +272,15 @@ func (w *NanoWallet) createSendBlock(wallet *ent.Wallet, sender *ent.Account, am
 		return nil, err
 	}
 
+	fmt.Printf("converting balance\n")
+
 	// Convert balance to big int
 	balanceBigInt, ok := big.NewInt(0).SetString(accountInfo.Balance, 10)
 	if !ok {
 		return nil, errors.New("Unable to parse balance")
 	}
+
+	fmt.Printf("checking if balance is sufficent\n")
 
 	// Check if balance is sufficient
 	if sendAmount.Cmp(balanceBigInt) > 0 {
@@ -306,6 +312,8 @@ func (w *NanoWallet) createSendBlock(wallet *ent.Wallet, sender *ent.Account, am
 	// Build other block fields
 	previous := accountInfo.Frontier
 
+	fmt.Printf("getting rep\n")
+
 	var representative string
 	if wallet.Representative != nil {
 		representative = *wallet.Representative
@@ -320,6 +328,8 @@ func (w *NanoWallet) createSendBlock(wallet *ent.Wallet, sender *ent.Account, am
 	// Calculate new balance, subtracing sendAmount from balanceBigInt
 	newBalance := balanceBigInt.Sub(balanceBigInt, sendAmount)
 
+	fmt.Printf("entering the work part\n")
+
 	var work string
 	if precomputedWork == nil {
 		key := ""
@@ -330,13 +340,17 @@ func (w *NanoWallet) createSendBlock(wallet *ent.Wallet, sender *ent.Account, am
 		if !w.Config.Wallet.Banano {
 			difficulty = 64
 		}
+		fmt.Printf("calling WorkGenerateMeta\n")
 		work, err = w.WorkClient.WorkGenerateMeta(workbase, difficulty, true, false, key)
 		if err != nil {
+			fmt.Printf("WorkGenerateMeta returned an error!\n")
 			return nil, err
 		}
 	} else {
 		work = *precomputedWork
 	}
+
+	fmt.Printf("finished WorkGenerateMeta\n")
 
 	// Link is pubkey of destination
 	link, err := utils.AddressToPub(destination, w.Config.Wallet.Banano)
@@ -561,6 +575,7 @@ func (w *NanoWallet) CreateAndPublishSendBlock(wallet *ent.Wallet, amount string
 		}
 	}
 
+	fmt.Printf("creating send block\n")
 	sb, err := w.createSendBlock(wallet, acc, amount, destination, work, bpowKey)
 	if err != nil {
 		return "", err

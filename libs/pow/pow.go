@@ -54,7 +54,9 @@ func (p *PippinPow) workGenerateAPIRequest(ctx context.Context, url string, hash
 	resp, err := net.MakeWorkGenerateRequest(ctx, url, hash, difficulty)
 	if err == nil {
 		// Validate work
+		fmt.Printf("validating work from peer\n")
 		if IsWorkValid(hash, difficultyMultiplier, resp.Work) || !validate {
+			fmt.Printf("received valid work from work peer\n")
 			p.SetWorkPeersFailing(false)
 			WriteChannelSafe(out, resp.Work)
 		} else {
@@ -165,12 +167,15 @@ func (p *PippinPow) WorkGenerateMeta(hash string, difficultyMultiplier int, vali
 
 	select {
 	case result := <-resultChan:
+		fmt.Printf("got the work, sending cancel requests\n")
 		// Send work cancel
 		for _, peer := range p.WorkPeers {
 			go WorkCancelAPIRequest(peer, hash)
 		}
+		fmt.Printf("returning with work\n")
 		return *result, nil
 	case <-time.After(30 * time.Second):
+		fmt.Printf("PoW timed out\n")
 		// Send work cancel
 		for _, peer := range p.WorkPeers {
 			go WorkCancelAPIRequest(peer, hash)

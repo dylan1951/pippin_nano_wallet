@@ -125,9 +125,11 @@ func (hc *HttpController) HandleSendRequest(rawRequest *map[string]interface{}, 
 		return
 	}
 
+	fmt.Printf("calling CreateAndPublishSendBlock\n")
 	// Do the send
 	resp, err := hc.Wallet.CreateAndPublishSendBlock(dbWallet, sendRequest.Amount, sendRequest.Source, sendRequest.Destination, sendRequest.ID, sendRequest.Work, sendRequest.BpowKey)
 	if err != nil {
+		fmt.Printf("encountered error in CreateAndPublishSendBlock\n")
 		ErrBadRequest(w, r, err.Error())
 		return
 	}

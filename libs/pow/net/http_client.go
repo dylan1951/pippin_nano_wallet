@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/appditto/pippin_nano_wallet/libs/utils"
 	"io/ioutil"
 	"net/http"
@@ -44,6 +45,7 @@ func MakeRequest(ctx context.Context, url string, request interface{}, authoriza
 }
 
 func MakeWorkGenerateRequest(ctx context.Context, url string, hash string, difficulty string) (*models.WorkGenerateResponse, error) {
+	fmt.Printf("in MakeWorkGenerateRequest\n")
 	request := models.WorkGenerateRequest{
 		WorkBaseRequest: models.WorkBaseRequest{
 			Action: "work_generate",
@@ -51,6 +53,7 @@ func MakeWorkGenerateRequest(ctx context.Context, url string, hash string, diffi
 		},
 		Difficulty: difficulty,
 	}
+	fmt.Printf("calling MakeRequest\n")
 	response, err := MakeRequest(ctx, url, request, utils.GetEnv("RPC_API_KEY", ""))
 	if err != nil {
 		log.Errorf("Error making request %s", err)

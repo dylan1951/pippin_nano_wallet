@@ -36,6 +36,7 @@ func NewRPCClient(url string) *RPCClient {
 // Base request
 func (client *RPCClient) MakeRequest(request interface{}) ([]byte, error) {
 	requestBody, err := json.Marshal(request)
+	fmt.Println(string(requestBody))
 	if err != nil {
 		log.Errorf("Error marshalling request %s", err)
 		return nil, err
@@ -61,6 +62,7 @@ func (client *RPCClient) MakeRequest(request interface{}) ([]byte, error) {
 		log.Errorf("Error decoding response body %s", err)
 		return nil, err
 	}
+	fmt.Println(string(body))
 	return body, nil
 }
 
@@ -287,7 +289,7 @@ func (client *RPCClient) MakeProcessRequest(request requests.ProcessRequest) (*r
 		if !ok {
 			return nil, errors.New("Error response is not a string")
 		}
-		fmt.Printf("in MakeProcessRequest the response has error string\n")
+		fmt.Printf("in MakeProcessRequest the response has error string: %s\n", err)
 		return nil, errors.New(err)
 	}
 

@@ -54,6 +54,45 @@ func (hc *HttpController) HandleReceiveRequest(rawRequest *map[string]interface{
 	render.JSON(w, r, &blockResponse)
 }
 
+// Handle receive all blocks for a specific account
+func (hc *HttpController) HandleAccountReceiveAllRequest(rawRequest *map[string]interface{}, w http.ResponseWriter, r *http.Request) {
+	// mapstructure decode
+	var accountReceiveAllRequest requests.AccountReceiveAllRequest
+	if err := mapstructure.Decode(rawRequest, &accountReceiveAllRequest); err != nil {
+		log.Errorf("Error unmarshalling account_receive_all request %s", err)
+		ErrUnableToParseJson(w, r)
+		return
+	}
+
+	// See if wallet exists
+	dbWallet := hc.WalletExists(accountReceiveAllRequest.Wallet, w, r)
+	if dbWallet == nil {
+		return
+	}
+
+	// Validate account
+	_, err := utils.AddressToPub(accountReceiveAllRequest.Account, hc.Wallet.Config.Wallet.Banano)
+	if err != nil {
+		ErrBadRequest(w, r, fmt.Sprintf("Invalid account %s", accountReceiveAllRequest.Account))
+		return
+	}
+
+	receivedCount := 0
+	resp, err := hc.Wallet.ReceiveAllBlocks(dbWallet, accountReceiveAllRequest.Account, accountReceiveAllRequest.BpowKey)
+	if err != nil {
+		ErrInternalServerError(w, r, err.Error())
+		return
+	}
+	receivedCount += resp
+
+	response := responses.ReceiveAllResponse{
+		Received: receivedCount,
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, &response)
+}
+
 // Handle receive all blocks in entire wallet
 func (hc *HttpController) HandleReceiveAllRequest(rawRequest *map[string]interface{}, w http.ResponseWriter, r *http.Request) {
 	request := hc.DecodeBaseRequest(rawRequest, w, r)

@@ -97,6 +97,9 @@ func (hc *HttpController) Gateway(w http.ResponseWriter, r *http.Request) {
 	case "receive_all":
 		hc.HandleReceiveAllRequest(&baseRequest, w, r)
 		return
+	case "account_receive_all":
+		hc.HandleAccountReceiveAllRequest(&baseRequest, w, r)
+		return
 	case "send":
 		hc.HandleSendRequest(&baseRequest, w, r)
 		return

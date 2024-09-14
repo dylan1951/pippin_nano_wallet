@@ -24,6 +24,7 @@ func MakeRequest(ctx context.Context, url string, request interface{}, authoriza
 		return nil, err
 	}
 	httpRequest.Header.Add("Content-Type", "application/json")
+	httpRequest.Header.Set("nodes-api-key", utils.GetEnv("NODES_API_KEY", ""))
 	if authorization != "" {
 		httpRequest.Header.Add("Authorization", authorization)
 	}

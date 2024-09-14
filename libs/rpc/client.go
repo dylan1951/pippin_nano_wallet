@@ -49,6 +49,7 @@ func (client *RPCClient) MakeRequest(request interface{}) ([]byte, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", utils.GetEnv("RPC_API_KEY", ""))
+	req.Header.Set("nodes-api-key", utils.GetEnv("NODES_API_KEY", ""))
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
